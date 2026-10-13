@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="MentorshipScheduling.Domain\MentorshipScheduling.Domain.csproj" />
+  <Project Path="MentorshipScheduling.Application\MentorshipScheduling.Application.csproj" />
+  <Project Path="MentorshipScheduling.Infrastructure\MentorshipScheduling.Infrastructure.csproj" />
+  <Project Path="MentorshipScheduling.API\MentorshipScheduling.API.csproj" />
+  <Project Path="MentorshipScheduling.Tests\MentorshipScheduling.Tests.csproj" />
+</Solution>

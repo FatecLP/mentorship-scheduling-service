@@ -1,0 +1,11 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Staging}
+      ASPNETCORE_HTTP_PORTS: 8080
+      ConnectionStrings__MentorshipDatabase: "Server=${MYSQL_HOST};Port=3306;Database=menthfy_db;User=${MYSQL_USER};Password=${MYSQL_PASSWORD};"
+    ports:
+      - "${API_PORT:-5080}:8080"

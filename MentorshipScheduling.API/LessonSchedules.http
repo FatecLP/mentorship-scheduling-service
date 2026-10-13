@@ -1,0 +1,88 @@
+@baseUrl = http://localhost:5080
+@scheduleId = 1
+@studentId = 1
+@teacherId = 1
+@mentorshipId = 1
+
+### List the schedules for a student
+GET {{baseUrl}}/api/lesson-schedules?studentId={{studentId}}
+
+### List the schedules for a teacher
+GET {{baseUrl}}/api/lesson-schedules?teacherId={{teacherId}}
+
+### List schedules for a student in one mentorship
+GET {{baseUrl}}/api/lesson-schedules?studentId={{studentId}}&mentorshipId={{mentorshipId}}
+
+### Get a schedule as its student participant
+GET {{baseUrl}}/api/lesson-schedules/{{scheduleId}}?studentId={{studentId}}
+
+### Request a lesson for an accepted mentorship
+POST {{baseUrl}}/api/lesson-schedules
+Content-Type: application/json
+
+{
+  "mentorshipId": {{mentorshipId}},
+  "studentId": {{studentId}},
+  "startAt": "2030-10-13T14:00:00-03:00",
+  "endAt": "2030-10-13T15:00:00-03:00",
+  "format": "Online"
+}
+
+### Request an overlapping lesson; a 409 response indicates that the student
+### or teacher already has an active lesson in this interval
+POST {{baseUrl}}/api/lesson-schedules
+Content-Type: application/json
+
+{
+  "mentorshipId": {{mentorshipId}},
+  "studentId": {{studentId}},
+  "startAt": "2030-10-13T14:30:00-03:00",
+  "endAt": "2030-10-13T15:30:00-03:00",
+  "format": "Online"
+}
+
+### Change the date and format of a pending request
+PUT {{baseUrl}}/api/lesson-schedules/{{scheduleId}}
+Content-Type: application/json
+
+{
+  "studentId": {{studentId}},
+  "startAt": "2030-10-14T15:30:00-03:00",
+  "endAt": "2030-10-14T16:30:00-03:00",
+  "format": "InPerson"
+}
+
+### Approve a request as its teacher
+POST {{baseUrl}}/api/lesson-schedules/{{scheduleId}}/approve
+Content-Type: application/json
+
+{
+  "teacherId": {{teacherId}}
+}
+
+### Reject a request as its teacher
+POST {{baseUrl}}/api/lesson-schedules/{{scheduleId}}/reject
+Content-Type: application/json
+
+{
+  "teacherId": {{teacherId}}
+}
+
+### Cancel a request as its student
+POST {{baseUrl}}/api/lesson-schedules/{{scheduleId}}/cancel
+Content-Type: application/json
+
+{
+  "studentId": {{studentId}}
+}
+
+### Cancel a request as its teacher
+POST {{baseUrl}}/api/lesson-schedules/{{scheduleId}}/cancel
+Content-Type: application/json
+
+{
+  "teacherId": {{teacherId}}
+}
+
+### Get a non-existent schedule
+GET {{baseUrl}}/api/lesson-schedules/999999?studentId={{studentId}}
