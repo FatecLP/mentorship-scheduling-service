@@ -1,0 +1,81 @@
+name: Scheduling Service CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - feat/**
+      - refactor/**
+      - fix/**
+      - ci/**
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  security:
+    name: Security Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  build-and-test:
+    name: Build & Test (${{ matrix.configuration }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          include-prerelease: true
+
+      - name: Restore Dependencies
+        run: dotnet restore MentorshipScheduling.API/MentorshipScheduling.API.csproj
+
+      - name: Build (${{ matrix.configuration }})
+        run: dotnet build MentorshipScheduling.API/MentorshipScheduling.API.csproj --configuration ${{ matrix.configuration }} --no-restore
+
+      - name: Run Tests with Coverage
+        run: dotnet test MentorshipScheduling.Tests/MentorshipScheduling.Tests.csproj --configuration ${{ matrix.configuration }} --no-build --verbosity normal --collect:"XPlat Code Coverage"
+
+  docker-build:
+    name: Docker Image Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: mentorship-scheduling-service:latest
+
+  deploy:
+    name: Deploy to Render
+    needs: [security, build-and-test, docker-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Deploy Hook
+        run: |
+          curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
